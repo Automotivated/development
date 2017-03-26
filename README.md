@@ -20,6 +20,20 @@ From here we got two options:
 2. Improving the docker containers
 
 ## 1. Running the docker
+Navigate to the project root directory. Probably you have to build the images on your local machine first. Do so by running:
+
+```sh
+docker-compose build
+```
+It will do a lot of stuff, like pulling all dependencies and building the environment.
+Now, with everything in place, just run:
+
+```sh
+docker-compose up -d
+```
+The `-d` will run it in the background so you don't have to keep your terminal open.
+
+Now, just navigate to: [http://127.0.0.1:3000](http://127.0.0.1:3000). You should see the default server is up page. If not.. Goto step 2 and improve the docker!
 
 ## 2. Improving the environment
 Make your changes..

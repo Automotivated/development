@@ -37,6 +37,5 @@ RUN echo "http://dl-cdn.alpinelinux.org/alpine/edge/testing" >> /etc/apk/reposit
     /etc/php7/php-fpm.d/www.conf
 
 EXPOSE 9999
-# ENTRYPOINT ["/bin/sh"]
+
 CMD ["/usr/sbin/php-fpm7"]
-# CMD ["php", "-a"]
