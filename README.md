@@ -20,6 +20,12 @@ From here we got two options:
 2. Improving the docker containers
 
 ## 1. Running the docker
+First make a copy of the `.env.dist` file and name it `.env`. Now adjust the configuration accordingly.
+
+```sh
+cp .env.dist .env
+```
+
 Navigate to the project root directory. Probably you have to build the images on your local machine first. Do so by running:
 
 ```sh
@@ -35,7 +41,19 @@ The `-d` will run it in the background so you don't have to keep your terminal o
 
 Now, just navigate to: [http://127.0.0.1:3000](http://127.0.0.1:3000). You should see the default server is up page. If not.. Goto step 2 and improve the docker!
 
+### Logging in to the environments
+
+```
+docker exec -it amv-dev /bin/sh
+```
+
 ## 2. Improving the environment
 Make your changes..
 Create a Pull request
 Fingers crossed it get's merged
+
+
+## TODO
+
+- [] https://github.com/wangxian/alpine-mysql
+- [] https://github.com/maxpou/docker-symfony
