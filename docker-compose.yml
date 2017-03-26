@@ -1,0 +1,26 @@
+version: "3"
+services:
+  nginx:
+    build:
+      context: "${NGINX_ROOT}"
+    ports:
+      - "3000:80"
+    networks:
+      - server
+    volumes:
+      - "${PROJECT_ROOT}:/var/www/Automotivated:ro"
+      - "${NGINX_ROOT}/config/nginx.conf:/etc/nginx/nginx.conf:ro"
+      - "${NGINX_ROOT}/config/default.conf:/etc/nginx/conf.d/default.conf:ro"
+    depends_on:
+      - php
+  php:
+    build:
+      context: "${PHP_ROOT}"
+    networks:
+      - server
+    volumes:
+      - "${PROJECT_ROOT}:/var/www/Automotivated"
+      - "${PHP_ROOT}/config/php.ini:/etc/php7/php.ini:ro"
+
+networks:
+  server:
