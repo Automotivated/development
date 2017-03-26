@@ -42,7 +42,7 @@ The `-d` will run it in the background so you don't have to keep your terminal o
 Now, just navigate to: [http://127.0.0.1:3000](http://127.0.0.1:3000). You should see the default server is up page. If not.. Goto step 2 and improve the docker!
 
 ### Logging in to the environments
-
+Mostly we should login to the php environment for example, run the bin/console or composer commands
 ```
 docker exec -it amv-dev /bin/sh
 ```
@@ -54,6 +54,9 @@ Fingers crossed it get's merged
 
 
 ## TODO
-
-- [] https://github.com/wangxian/alpine-mysql
-- [] https://github.com/maxpou/docker-symfony
+- [ ] Add composer to the php library
+- [ ] Better logging (nginx)
+- [ ] Get some inspiration from here:
+ - [ ] https://github.com/maxpou/docker-symfony
+- [ ] Smaller mysql package?
+ - [ ] https://github.com/wangxian/alpine-mysql
