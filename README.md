@@ -55,8 +55,6 @@ Fingers crossed it get's merged
 
 ## TODO
 - [ ] Add composer to the php library
-- [ ] Better logging (nginx)
-- [ ] Get some inspiration from here:
- - [ ] https://github.com/maxpou/docker-symfony
-- [ ] Smaller mysql package?
- - [ ] https://github.com/wangxian/alpine-mysql
+- [x] Better logging (nginx)
+- [ ] Get some inspiration from here: https://github.com/maxpou/docker-symfony
+- [ ] Smaller mysql package: https://github.com/wangxian/alpine-mysql

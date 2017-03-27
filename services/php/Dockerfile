@@ -2,7 +2,7 @@
 FROM alpine:edge
 
 # Maintainer
-MAINTAINER Ferry Kobus <kobus@justlease.nl>
+MAINTAINER Ferry Kobus <ferry@automotivated.nl>
 
 # Environments
 ENV TIMEZONE Europe/Amsterdam
