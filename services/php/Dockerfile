@@ -15,6 +15,9 @@ RUN echo "http://dl-cdn.alpinelinux.org/alpine/edge/testing" >> /etc/apk/reposit
 	echo "${TIMEZONE}" > /etc/timezone && \
 	apk add --update \
 		libxml2 \
+		git \
+		curl \
+		unzip \
 		php7-phar \
 		php7-curl \
 		php7-xml \
@@ -38,10 +41,15 @@ RUN echo "http://dl-cdn.alpinelinux.org/alpine/edge/testing" >> /etc/apk/reposit
 	apk del tzdata && \
 	rm -rf /var/cache/apk/* /var/lib/apt/lists/* && \
 
+	# Fixes for docker
 	sed -i -e "s|;daemonize\s*=.*|daemonize = no|" \
 		/etc/php7/php-fpm.conf && \
   sed -i -e "s|listen\s*=.*|listen = 9999|" \
-    /etc/php7/php-fpm.d/www.conf
+    /etc/php7/php-fpm.d/www.conf && \
+
+  # Install Composer globally
+  curl -L -o /usr/local/bin/composer https://getcomposer.org/composer.phar && \
+  chmod +x /usr/local/bin/composer
 
 EXPOSE 9999
 

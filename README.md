@@ -20,12 +20,25 @@ From here we got two options:
 2. Improving the docker containers
 
 ## 1. Running the docker
+
+### 1.1 Installation
 First make a copy of the `.env.dist` file and name it `.env`. Now adjust the configuration accordingly.
 
 ```sh
 cp .env.dist .env
 ```
+When your smart, you will install all Automotivated projects in the same namespace. Therefore linking and developping is much easier.
 
+```
+/users/myname/home/project/Automotivated/development
+/users/myname/home/project/Automotivated/engine
+/users/myname/home/project/Automotivated/vroom
+....
+```
+When you use this format, you should run into any troubles when you set the `PROJECT_ROOT=../`
+If you somehow want to setup things differently, make sure you adjust the `root /var/www/Automotivated/engine/web;` in the `default.conf` of nginx before proceeding!
+
+### 1.2 Building & running
 Navigate to the project root directory. Probably you have to build the images on your local machine first. Do so by running:
 
 ```sh
@@ -41,20 +54,32 @@ The `-d` will run it in the background so you don't have to keep your terminal o
 
 Now, just navigate to: [http://127.0.0.1:3000](http://127.0.0.1:3000). You should see the default server is up page. If not.. Goto step 2 and improve the docker!
 
-### Logging in to the environments
-Mostly we should login to the php environment for example, run the bin/console or composer commands
+### 1.3 Logging in to the environments
+Mostly we should login to the php environment for example, run the `bin/console` or `composer` commands
 ```
 docker exec -it amv-dev /bin/sh
 ```
 
-## 2. Improving the environment
+### 1.4 Composer
+Once logged in, navigate to `/var/www/Automotivated/engine` and run `composer install`
+
+```
+cd /var/www/Automotivated/engine
+composer install
+```
+
+### 1.5 Off you go!
+[http://127.0.0.1:3000/app_dev.php/api/search](http://127.0.0.1:3000/app_dev.php/api/search)
+
+## 2. Improving the environments
 Make your changes..
+
 Create a Pull request
+
 Fingers crossed it get's merged
 
-
 ## TODO
-- [ ] Add composer to the php library
+- [x] Add composer to the php library
 - [x] Better logging (nginx)
 - [ ] Get some inspiration from here: https://github.com/maxpou/docker-symfony
 - [ ] Smaller mysql package: https://github.com/wangxian/alpine-mysql
