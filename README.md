@@ -35,7 +35,7 @@ When your smart, you will install all Automotivated projects in the same namespa
 /users/myname/home/project/Automotivated/vroom
 ....
 ```
-When you use this format, you should run into any troubles when you set the `PROJECT_ROOT=../`
+When you use this format, you shouldn't run into any troubles when you set the `PROJECT_ROOT=../`
 If you somehow want to setup things differently, make sure you adjust the `root /var/www/Automotivated/engine/web;` in the `default.conf` of nginx before proceeding!
 
 ### 1.2 Building & running
@@ -73,9 +73,7 @@ composer install
 
 ## 2. Improving the environments
 Make your changes..
-
 Create a Pull request
-
 Fingers crossed it get's merged
 
 ## TODO
