@@ -52,7 +52,9 @@ docker-compose up -d
 ```
 The `-d` will run it in the background so you don't have to keep your terminal open.
 
-Now, just navigate to: [http://127.0.0.1:3000](http://127.0.0.1:3000). You should see the default server is up page. If not.. Goto step 2 and improve the docker!
+Now, just navigate to: [http://127.0.0.1](http://127.0.0.1). You should see the default server is up page. If not.. Goto step 2 and improve the docker or, try a different port.  
+Change the port in the `docker-compose.yml` to a desirable and free port (`- "3000:80"`) for example.  
+You can always add a rule to your hosts file for using a domain instead of an ip.
 
 ### 1.3 Logging in to the environments
 Mostly we should login to the php environment for example, run the `bin/console` or `composer` commands
@@ -69,7 +71,7 @@ composer install
 ```
 
 ### 1.5 Off you go!
-[http://127.0.0.1:3000/app_dev.php/api/search](http://127.0.0.1:3000/app_dev.php/api/search)
+[http://127.0.0.1/app_dev.php/api/search](http://127.0.0.1/app_dev.php/api/search)
 
 ## 2. Improving the environments
 Make your changes..  

@@ -6,7 +6,7 @@ services:
     build:
       context: "${NGINX_ROOT}"
     ports:
-      - "3000:80"
+      - "80:80"
     networks:
       - server
     volumes:
