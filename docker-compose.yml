@@ -35,11 +35,13 @@ services:
 
   # MySQL
   mysql:
-    image: mysql:latest
+    build:
+      context: ./services/mariadb
     networks:
       - database
     volumes:
       - "data:/var/lib/mysql"
+      - ./logs:/var/lib/mysql/mysql-bin
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: "${DB_ROOT_PASSWORD}"
