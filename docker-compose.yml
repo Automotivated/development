@@ -29,20 +29,18 @@ services:
     volumes:
       - "${PROJECT_ROOT}:/var/www/Automotivated"
       - "${PHP_ROOT}/config/php.ini:/etc/php7/php.ini:ro"
-    container_name: amv-dev
     restart: always
     depends_on:
       - mysql
 
   # MySQL
   mysql:
-    build:
-      context: ./services/mariadb
+    image: mysql:latest
     networks:
       - database
     volumes:
       - "data:/var/lib/mysql"
-      - ./logs:/var/lib/mysql/mysql-bin
+      - "./services/mysql/dump/:/docker-entrypoint-initdb.d"
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: "${DB_ROOT_PASSWORD}"
@@ -62,14 +60,10 @@ services:
 
 networks:
   server:
-    driver: bridge
   database:
-    driver: bridge
   esnet:
     driver: bridge
 
 volumes:
   data:
-    driver: local
   esdata:
-    driver: local
