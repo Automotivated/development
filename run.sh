@@ -75,8 +75,6 @@ if [ "$METHOD" == "up" ] ; then
 	FILES=`grep -F "FILES=" .config`
 
 	up="docker-compose -p $PROJECT ${FILES:6} up -d"
-	echo $up
-	exit
 	if [ "$FORCE" == true ] ; then
 		up+=" --force-recreate"
 	fi
