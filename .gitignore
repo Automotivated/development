@@ -1,3 +1,5 @@
 .env
 logs/*
 !logs/.gitkeep
+!logs/domains/.gitkeep
+setup.sh
