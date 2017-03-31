@@ -53,10 +53,26 @@ function add_project() {
 	fi
 }
 
-# function setup_database() {
-
-# }
-
+function setup_database() {
+	read -p 'MySQL database user: ' db_user
+	if [ -z "$db_user" ] ; then
+		rand
+		db_user=$t
+		echo "Generated database user: ${db_user}"
+	fi
+	read -p 'MySQL database name: ' db_name
+	if [ -z "$db_name" ] ; then
+		rand
+		db_name=$t
+		echo "Generated database name: ${db_name}"
+	fi
+	read -p 'MySQL database password: ' db_pass
+	if [ -z "$db_pass" ] ; then
+		rand
+		db_pass=$t
+		echo "Generated database password: ${db_pass}"
+	fi
+}
 ##
 # Check if we already runned the install
 # If not, continue with the installation
@@ -67,16 +83,20 @@ if [ ! -f ".config" ] ; then
 	use_elastic
 	echo "FILES=${FILES}" >> $CONFIG_FILE
 	get_database_config
-	sed -n "s/^DB_ROOT_PASSWORD=.*/DB_ROOT_PASSWORD=${db_root}/gpw" ".env.dist" > $TEMP_FILE
-	cat $TEMP_FILE
+	cat ".env.dist" > $TEMP_FILE
+	sed -i "" "s/^DB_ROOT_PASSWORD=.*/DB_ROOT_PASSWORD=${db_root}/g" $TEMP_FILE
 fi
 
 if [ -f ".config" ] ; then
 	echo "Adding a new project to the stack"
 	add_project
+	setup_database
 	# setup_database
 	if [ "$FIRST_RUN" == true ] ; then
-		sed -n "s/^HOST=.*/HOST=${domainname}/gpw $TEMP_FILE" > $TEMP_FILE
+		sed -i "" "s/^HOST=.*/HOST=${domainname}/g" $TEMP_FILE
+		sed -i "" "s/^DB_NAME=.*/DB_NAME=${db_name}/g" $TEMP_FILE
+		sed -i "" "s/^DB_USERNAME=.*/DB_USERNAME=${db_user}/g" $TEMP_FILE
+		sed -i "" "s/^DB_PASSWORD=.*/DB_PASSWORD=${db_pass}/g" $TEMP_FILE
 		mv $TEMP_FILE ".env"
 	fi
 fi
