@@ -2,6 +2,8 @@
 .env.tmp
 .config
 
+hosts.tmp
+
 logs/*
 !logs/.gitkeep
 !logs/domains/*
