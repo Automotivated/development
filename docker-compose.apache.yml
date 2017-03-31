@@ -1,0 +1,21 @@
+version: "3"
+
+services:
+  # Apache
+  apache:
+    build:
+      context: ./services/apache
+    ports:
+      - "80:80"
+    networks:
+      - server
+    volumes:
+      - "${PROJECT_ROOT}:/var/www:ro"
+      - ./logs:/var/log/apache2
+      - ./services/apache/vhosts:/etc/apache2/vhosts.d:ro
+    restart: always
+    depends_on:
+      - php
+
+networks:
+  server:

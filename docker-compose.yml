@@ -1,50 +1,18 @@
 version: "3"
 
 services:
-  # NginX
-  nginx:
-    build:
-      context: "${NGINX_ROOT}"
-    ports:
-      - "81:80"
-    networks:
-      - server
-    volumes:
-      - "${PROJECT_ROOT}:/var/www/Automotivated:ro"
-      - ./logs:/var/log/nginx
-      - "${NGINX_ROOT}/config/nginx.conf:/etc/nginx/nginx.conf:ro"
-      - "${NGINX_ROOT}/config/default.conf:/etc/nginx/conf.d/default.conf:ro"
-    restart: always
-    depends_on:
-      - php
-
-  # Apache
-  apache:
-    build:
-      context: "${APACHE_ROOT}"
-    ports:
-      - "80:80"
-    networks:
-      - server
-    volumes:
-      - "${PROJECT_ROOT}:/var/www/Automotivated:ro"
-      - ./logs:/var/log/apache2
-      - "${APACHE_ROOT}/vhosts:/etc/apache2/vhosts.d:ro"
-    restart: always
-    depends_on:
-      - php
 
   # PHP
   php:
     build:
-      context: "${PHP_ROOT}"
+      context: ./services/php
     networks:
       - server
       - database
       - esnet
     volumes:
-      - "${PROJECT_ROOT}:/var/www/Automotivated"
-      - "${PHP_ROOT}/config/php.ini:/etc/php7/php.ini:ro"
+      - "${PROJECT_ROOT}:/var/www"
+      - ./services/php/config/php.ini:/etc/php7/php.ini:ro
     restart: always
     depends_on:
       - mysql
@@ -64,21 +32,10 @@ services:
       MYSQL_USER: "${DB_USERNAME}"
       MYSQL_PASSWORD: "${DB_PASSWORD}"
 
-  # Elasticsearch
-  elastic:
-    image: docker.elastic.co/elasticsearch/elasticsearch:5.3.0
-    volumes:
-      - esdata:/usr/share/elasticsearch/data
-    ports:
-      - 9200:9200
-    networks:
-      - esnet
-
 networks:
   server:
   database:
   esnet:
-    driver: bridge
 
 volumes:
   data:

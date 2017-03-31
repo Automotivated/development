@@ -1,6 +1,12 @@
 .env
+.config
+
 logs/*
 !logs/.gitkeep
 !logs/domains/*
 !logs/domains/.gitkeep
-setup.sh
+
+services/apache/vhosts/*
+!services/apache/vhosts/example.config
+services/nginx/config/conf.d/*
+!services/nginx/config/conf.d/example.config

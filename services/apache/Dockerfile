@@ -30,7 +30,7 @@ RUN echo "http://dl-cdn.alpinelinux.org/alpine/edge/testing" >> /etc/apk/reposit
 	sed -i -e "s/^#LoadModule slotmem_shm_module/LoadModule slotmem_shm_module/" \
 		/etc/apache2/httpd.conf && \
 
-	sed -i -e "s/^#ServerName www.example.com:80/ServerName automotivated.dev/" \
+	sed -i -e "s/^#ServerName www.example.com:80/ServerName example.local/" \
 		/etc/apache2/httpd.conf && \
 
 	# Include our custom vhosts folder
@@ -38,5 +38,7 @@ RUN echo "http://dl-cdn.alpinelinux.org/alpine/edge/testing" >> /etc/apk/reposit
 
 	ln -sf /dev/stdout /var/log/apache2/access.log && \
 	ln -sf /dev/stderr /var/log/apache2/error.log
+
+EXPOSE 80
 
 CMD ["httpd", "-D", "FOREGROUND"]

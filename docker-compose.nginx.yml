@@ -1,0 +1,22 @@
+version: "3"
+
+services:
+  # NginX
+  nginx:
+    build:
+      context: ./services/nginx
+    ports:
+      - "80:80"
+    networks:
+      - server
+    volumes:
+      - "${PROJECT_ROOT}:/var/www:ro"
+      - ./logs:/var/log/nginx
+      - ./services/nginx/config/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./services/nginx/config/conf.d:/etc/nginx/conf.d:ro
+    restart: always
+    depends_on:
+      - php
+
+networks:
+  server:

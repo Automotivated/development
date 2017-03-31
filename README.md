@@ -9,19 +9,20 @@ Put on some nice [Electro Swing](https://www.youtube.com/watch?v=htbQgPh1DaA) an
 You can validate it by running `docker -v` in your favorite ([fish](https://fishshell.com/) || [zsh](http://www.zsh.org/)) flavoured ([oh-my-fish](https://github.com/oh-my-fish/oh-my-fish) || [oh-my-zsh](https://github.com/robbyrussell/oh-my-zsh)) terminal ([iterm](https://www.iterm2.com/)).
 It should output something like: `Docker version 17.03.0-ce, build 60ccb22`
 
-First get the necessary dockerfiles by cloning this repository:
+First get the necessary files by cloning this repository:
 ```sh
 git clone https://github.com/Automotivated/development.git
 ```
 
-From here we got two options:
+## 1. Installation
+Run install.sh for optimal and minimal effort for setting everything up.
 
-1. Running the docker for active development on the projects
-2. Improving the docker containers
+## 2. Firing up the development environment
 
-## 1. Running the docker
 
-### 1.1 Installation
+## 3. Manual 
+
+### 3.1 Installation
 First make a copy of the `.env.dist` file and name it `.env`. Now adjust the configuration accordingly.
 
 ```sh
@@ -72,7 +73,7 @@ composer install
 ### 1.5 Off you go!
 [http://127.0.0.1/app_dev.php/api/search](http://127.0.0.1/app_dev.php/api/search)
 
-## 2. Improving the environments
+## 4. Improving the environments
 Make your changes..  
 Create a Pull request  
 Fingers crossed it get's merged
