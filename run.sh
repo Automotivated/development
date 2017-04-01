@@ -168,25 +168,26 @@ function update_hosts_file() {
 	if [ -f ${HOSTS_FILE} ]; then
 		get_ip
 
+		## Update hosts file
+		grep -v $IP $HOSTS_FILE > $TEMP_FILE
 		for entry in "projects"/* ; do
 			HOST=${entry:9}
 			if [ "$1" == "add" ] ; then
-				## Update hosts file
-				grep -v $HOST $HOSTS_FILE > $TEMP_FILE
 				echo $IP '\t' $HOST '\t # Added by \t ' $PROJECT ' automatically' >> $TEMP_FILE
-				ALIAS="alias"
 			elif [ "$1" == "remove" ] ; then
 				grep -v $HOST $HOSTS_FILE > $TEMP_FILE
-				ALIAS="-alias"
-			fi
-
-			## Fix docker ip on mac
-			if [[ ${KERNEL} == *Darwin* ]] ; then
-				fix_alias="sudo ifconfig lo0 ${ALIAS} ${IP}"
-				eval $fix_alias
 			fi
 		done
 		sudo mv $TEMP_FILE $HOSTS_FILE
+
+		## Fix docker ip on mac
+		if [[ ${KERNEL} == *Darwin* ]] ; then
+			if [ "$1" == "add" ] ; then
+				sudo ifconfig lo0 alias ${IP}
+			elif [ "$1" == "remove" ] ; then
+				sudo ifconfig lo0 -alias ${IP}
+			fi
+		fi
 	fi
 }
 
