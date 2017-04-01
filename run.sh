@@ -4,7 +4,7 @@
 # Offcourse you can be stubborn and do everything by hand.
 # There are some mac fixes*
 #
-# Author: Ferry Kobus
+# Maintainer: Ferry Kobus <ferry@automotivated.nl>
 #
 ############################################################
 #!/bin/sh
@@ -166,27 +166,26 @@ function get_ip() {
 ##
 function update_hosts_file() {
 	if [ -f ${HOSTS_FILE} ]; then
-		# Extract host from .env
-		HOST=`cat .env | grep HOST=`
-		HOST=${HOST:5}
-
 		get_ip
 
-		if [ "$1" == "add" ] ; then
-			## Update hosts file
-			grep -v $HOST $HOSTS_FILE > $TEMP_FILE
-			echo $IP '\t' $HOST '\t # Added by \t ' $PROJECT ' automatically' >> $TEMP_FILE
-			ALIAS="alias"
-		elif [ "$1" == "remove" ] ; then
-			grep -v $HOST $HOSTS_FILE > $TEMP_FILE
-			ALIAS="-alias"
-		fi
+		for entry in "projects"/* ; do
+			HOST=${entry:9}
+			if [ "$1" == "add" ] ; then
+				## Update hosts file
+				grep -v $HOST $HOSTS_FILE > $TEMP_FILE
+				echo $IP '\t' $HOST '\t # Added by \t ' $PROJECT ' automatically' >> $TEMP_FILE
+				ALIAS="alias"
+			elif [ "$1" == "remove" ] ; then
+				grep -v $HOST $HOSTS_FILE > $TEMP_FILE
+				ALIAS="-alias"
+			fi
 
-		## Fix docker ip on mac
-		if [[ ${KERNEL} == *Darwin* ]] ; then
-			fix_alias="sudo ifconfig lo0 ${ALIAS} ${IP}"
-			eval $fix_alias
-		fi
+			## Fix docker ip on mac
+			if [[ ${KERNEL} == *Darwin* ]] ; then
+				fix_alias="sudo ifconfig lo0 ${ALIAS} ${IP}"
+				eval $fix_alias
+			fi
+		done
 		sudo mv $TEMP_FILE $HOSTS_FILE
 	fi
 }
@@ -284,7 +283,7 @@ function add_project() {
 	fi
 
 	if [ "$webserver" == "nginx" ] ; then
-		echo  "setting up nginx"
+		echo "FEATURE NOT IMPLEMENTED YET!"
 	fi
 }
 

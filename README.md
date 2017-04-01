@@ -113,4 +113,4 @@ Fingers crossed it get's merged
  - [ ] Initial wordpress template with bedrock
  - [ ] Clean symfony template
 - [ ] Add database to mysql when adding new project
-- [ ] Multidomain alias
+- [x] Multidomain alias
