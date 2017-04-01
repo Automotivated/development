@@ -171,6 +171,7 @@ function get_ip() {
 		validservice="${PROJECT}_${webserver}_"
 		if [[ ${servicename:1} == ${validservice}* ]] ; then
 			IP=`docker inspect --format {{.NetworkSettings.Networks.${PROJECT}_server.IPAddress}} $service`
+			break
 		fi
 	done
 }
@@ -310,6 +311,22 @@ function add_project() {
 	fi
 }
 
+function get_it_in() {
+	# Loop over all running docker containers and find our chosen webserver
+	for service in `docker ps -q`; do
+		# Extract the servicename
+		servicename=`docker inspect --format '{{ .Name }}' $service`
+		validservice="${PROJECT}_php_"
+		if [[ ${servicename:1} == ${validservice}* ]] ; then
+			CONTAINER=$service
+			break
+		fi
+	done
+	if [ ! -z "$CONTAINER" ] ; then
+		docker exec -it $CONTAINER /bin/sh
+	fi
+}
+
 function check_config() {
 	# check if .config exists
 	if [ ! -f ".config" ] ; then
@@ -332,6 +349,9 @@ elif [ "$COMMAND" == "down" ] ; then
 elif [ "$COMMAND" == "add" ] ; then
 	check_config
 	add_project
+elif [ "$COMMAND" == "ssh" ] ; then
+	check_config
+	get_it_in
 elif [ "$COMMAND" == "install" ] ; then
 	# check if .config exists
 	if [ -f ".config" ] ; then
@@ -343,3 +363,8 @@ elif [ "$COMMAND" == "install" ] ; then
 else
 	show_help
 fi
+
+
+##
+# http://stackoverflow.com/questions/36627980/how-to-execute-commands-in-docker-container-as-part-of-bash-shell-script
+##

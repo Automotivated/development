@@ -35,6 +35,7 @@ RUN echo "http://dl-cdn.alpinelinux.org/alpine/edge/testing" >> /etc/apk/reposit
 		php7-fpm \
 		php7-session \
 		php7-opcache \
+		php7-xmlwriter \
 		php7 && \
 
 	# Clean-up
