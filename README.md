@@ -91,4 +91,4 @@ Fingers crossed it get's merged
 
 ## TODO
 - [ ] Add ssh inlog to run.sh
-- [ ] Add 
+- [ ] Add templating for project types

@@ -119,6 +119,13 @@ function get_database_config() {
 	fi
 }
 
+function set_webserver() {
+	if [[ -z "$webserver" ]] ; then
+		webserver=`cat .config | grep WEBSERVER=`
+		webserver=${webserver:10}
+	fi
+}
+
 function setup_database() {
 	get_directory
 	read -p 'MySQL database user: ' db_user
@@ -146,8 +153,7 @@ function get_ip() {
 	for service in `docker ps -q`; do
 		# Extract the servicename
 		servicename=`docker inspect --format '{{ .Name }}' $service `
-		webserver=`cat .config | grep WEBSERVER=`
-		webserver=${webserver:10}
+		set_webserver
 		validservice="${PROJECT}_${webserver}_"
 		if [[ ${servicename:1} == ${validservice}* ]] ; then
 			IP=`docker inspect --format {{.NetworkSettings.Networks.${PROJECT}_server.IPAddress}} $service`
@@ -155,17 +161,16 @@ function get_ip() {
 	done
 }
 
-
-function set_host() {
-	# Extract host from .env
-	HOST=`cat .env | grep HOST=`
-	HOST=${HOST:5}
-}
-
+##
+# Todo, multidomain / project support
+##
 function update_hosts_file() {
 	if [ -f ${HOSTS_FILE} ]; then
+		# Extract host from .env
+		HOST=`cat .env | grep HOST=`
+		HOST=${HOST:5}
+
 		get_ip
-		set_host
 
 		if [ "$1" == "add" ] ; then
 			## Update hosts file
@@ -221,6 +226,14 @@ function get_it_down() {
 	fi
 }
 
+function setup_hostname() {
+	read -p 'Hostname: ' domainname
+	if [ -z "$domainname" ] ; then
+		echo $INVALID
+		setup_hostname
+	fi
+}
+
 ##
 # Installs a new environment from scratch
 # Check if we already runned the install
@@ -237,17 +250,21 @@ function do_install() {
 	add_project
 }
 
+function setup_apache_project() {
+	VHOST="services/apache/vhosts/${domainname}.conf"
+	cat services/apache/vhosts/example.config > $VHOST
+	sed -i "" "s/domain.tld/${domainname}/g" $VHOST
+	sed -i "" "s#/projects/project#/projects/${domainname}#g" $VHOST
+	cp -R templates/default projects/${domainname}
+}
+
 ##
 # Add a project
 ##
 function add_project() {
 	echo "Adding a new project to the stack"
 
-	read -p 'Hostname: ' domainname
-	if [ -z "$domainname" ] ; then
-		echo $INVALID
-		add_project
-	fi
+	setup_hostname
 
 	# Setup the database
 	setup_database
@@ -260,12 +277,15 @@ function add_project() {
 		mv $TEMP_ENV_FILE ".env"
 	fi
 
+	set_webserver
+
 	if [ "$webserver" == "apache" ] ; then
-		echo  "setting up apache"
+		setup_apache_project
 	fi
 
-	# rm ".env"
-	# rm ".config"
+	if [ "$webserver" == "nginx" ] ; then
+		echo  "setting up nginx"
+	fi
 }
 
 if [ "$COMMAND" == "up" ] ; then

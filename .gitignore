@@ -13,3 +13,6 @@ services/apache/vhosts/*
 !services/apache/vhosts/example.config
 services/nginx/config/conf.d/*
 !services/nginx/config/conf.d/example.config
+
+projects/*
+!projects/.gitkeep
