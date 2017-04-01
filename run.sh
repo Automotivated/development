@@ -252,6 +252,16 @@ function do_install() {
 function setup_apache_project() {
 	VHOST="services/apache/vhosts/${domainname}.conf"
 	cat services/apache/vhosts/example.config > $VHOST
+	create_project
+}
+
+function setup_nginx_project() {
+	VHOST="services/nginx/config/conf.d/${domainname}.conf"
+	cat services/nginx/config/conf.d/example.config > $VHOST
+	create_project
+}
+
+function create_project() {
 	sed -i "" "s/domain.tld/${domainname}/g" $VHOST
 	sed -i "" "s#/projects/project#/projects/${domainname}#g" $VHOST
 	cp -R templates/default projects/${domainname}
@@ -269,7 +279,6 @@ function add_project() {
 	setup_database
 
 	if [ "$FIRST_RUN" == true ] ; then
-		sed -i "" "s/^HOST=.*/HOST=${domainname}/g" $TEMP_ENV_FILE
 		sed -i "" "s/^DB_NAME=.*/DB_NAME=${db_name}/g" $TEMP_ENV_FILE
 		sed -i "" "s/^DB_USERNAME=.*/DB_USERNAME=${db_user}/g" $TEMP_ENV_FILE
 		sed -i "" "s/^DB_PASSWORD=.*/DB_PASSWORD=${db_pass}/g" $TEMP_ENV_FILE
@@ -283,7 +292,7 @@ function add_project() {
 	fi
 
 	if [ "$webserver" == "nginx" ] ; then
-		echo "FEATURE NOT IMPLEMENTED YET!"
+		setup_nginx_project
 	fi
 }
 

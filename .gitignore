@@ -10,9 +10,9 @@ logs/*
 !logs/domains/.gitkeep
 
 services/apache/vhosts/*
-!services/apache/vhosts/example.config
+!services/apache/vhosts/*.config
 services/nginx/config/conf.d/*
-!services/nginx/config/conf.d/example.symfony.config
+!services/nginx/config/conf.d/*.config
 
 projects/*
 !projects/.gitkeep
