@@ -39,15 +39,16 @@ Usage: run.sh COMMAND
 
 Options:
     -h,   --help              Will print this message
-    -p,   --project           Custom project namespace
     -v,   --verbose           Will output everything
     -f,   --force-recreate    Force recreation
+    -b,   --build             Force rebuild of dockers
 
 Commands:
     install                   Start a fresh installation
     add                       Add a new domain / project
     up                        Will bring the services up
     down                      Shutsdown all services
+    ssh                       Directly login to the php container
 ```
 The installation will ask you some questions and if you fill them in correctly you'll end up with an `.config` and `.env`
 The `.config` is for future reference and the `.env` is a default [docker compose environment file](https://docs.docker.com/compose/environment-variables/#the-env-file).
