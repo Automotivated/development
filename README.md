@@ -25,7 +25,8 @@ First get the necessary files by cloning this repository:
 git clone https://github.com/Automotivated/development.git
 ```
 
-## 1. Installation
+## 1. Setting up
+#### 1.1 Installation
 This repository comes with a script that can handle all important stuff! Sweet!  
 Just open your terminal and go to the root of this project. If you're using `fish`, prefix `/bin/sh`
 
@@ -52,21 +53,33 @@ The installation will ask you some questions and if you fill them in correctly y
 The `.config` is for future reference and the `.env` is a default [docker compose environment file](https://docs.docker.com/compose/environment-variables/#the-env-file).
 You can change the contents of the `.env` to your own likings, but please be advised that the run script is depending on it!
 
-## 2. Firing up the development environment
+#### 1.2 Creating a new project
+When you run the fresh install, it will automatically fire up the add project procedure. You can offcourse as many projects as you like. To add a project simply run:
+```sh
+/bin/sh run.sh add
+```
+This setup will follow a few important rules! First, the created folder structure will be named to the domainname you filled in in the process.
+All generated config files point to that directory and the script will add that domainname to the /etc/hosts file. So it's good practice to keep it like a real tld: `my-awesome-project.local` or ` my-awesome-project.dev`  
+Your freshly squeezed project will be available under that domain and you find your files in: `projects/my-awesome-project.dev` See chapter 2 for existing projects.
+
+#### 1.3 Firing up the development environment
 This shouldn't be that hard!
 
-`/bin/sh run.sh up`
+```
+/bin/sh run.sh up
+```
 
-Want to know what's happening in the background? Just add the `-v` flag for some verbose output.
+Want to know what's happening in the background or do some troubleshooting? Just add the `-v` flag for some verbose output.
 
-## 3. Show me the money!
+#### 1.4 Show me the money!
 
-Now, just navigate to: [http://127.0.0.1](http://127.0.0.1). You should see the default server is up page.
-> We added in the script an alias for your domain, so you can use that instead. If something already runs on port 80, shut that down!
+Now, just navigate to: [http://127.0.0.1](http://127.0.0.1) or your chosen domainname. You should see the default server is up page.
+> If something already runs on port 80, shut that down!
 
-## 4. Logging in into the containers
+#### 1.5 Logging in into the containers
 Mostly we should login to the php container for example, run the `bin/console` or `composer` commands  
 If you didn't choose your own namespacing for the project with the `-p` operator, then the following command should do it:
+> We're working on creating a command to do this automatically.
 
 ```
 docker exec -it devenv_php_1 /bin/sh
@@ -78,13 +91,18 @@ If however you changed the project name, then replace `<container>` with your ow
 docker exec -it <container> /bin/sh
 ```
 
+## 2. Adding an existing project
+Offcourse you already have a project loaded into somesort of git repository. To make this work, follow these steps.
 
-## 5. Manual installation and running
+1. Add project like described in chapter 1.2
+2. Clone the root of your project into the created folder
+3. Fix any bugs like vhosts settings
+
+## 3. Manual installation and running
 Okay, so you're a badass! Good for you! Get to know [docker compose](https://docs.docker.com/compose/) and use this repo as a guideline.
 Make sure to create a valid docker-compose.yml or use the `-f` operator like we do in the run.sh.
 
-
-## 6. Improving the environments
+## 4. Improving the environments
 Make your changes..  
 Create a Pull request  
 Fingers crossed it get's merged
@@ -92,3 +110,7 @@ Fingers crossed it get's merged
 ## TODO
 - [ ] Add ssh inlog to run.sh
 - [ ] Add templating for project types
+ - [ ] Initial wordpress template with bedrock
+ - [ ] Clean symfony template
+- [ ] Add database to mysql when adding new project
+- [ ] Multidomain alias
