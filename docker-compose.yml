@@ -11,7 +11,7 @@ services:
       - database
       - esnet
     volumes:
-      - "${PROJECT_ROOT}:/var/www"
+      - "${PROJECT_ROOT}:/var/www/projects"
       - ./services/php/config/php.ini:/etc/php7/php.ini:ro
     restart: always
     depends_on:

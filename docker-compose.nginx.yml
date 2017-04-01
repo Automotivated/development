@@ -10,7 +10,7 @@ services:
     networks:
       - server
     volumes:
-      - "${PROJECT_ROOT}:/var/www:ro"
+      - "${PROJECT_ROOT}:/var/www/projects:ro"
       - ./logs:/var/log/nginx
       - ./services/nginx/config/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./services/nginx/config/conf.d:/etc/nginx/conf.d:ro

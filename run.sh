@@ -1,34 +1,44 @@
-##################################################
+############################################################
 # Run development environment automatically
-# Offcourse you can be stubborn and do everything
-# by hand.
+#
+# Offcourse you can be stubborn and do everything by hand.
 # There are some mac fixes*
 #
 # Author: Ferry Kobus
 #
-##################################################
-
+############################################################
 #!/bin/sh
 
 PROJECT="devenv"
 IP="127.0.0.1"
-TEMP_FILE=hosts.tmp
+TEMP_FILE="hosts.tmp"
 HOSTS_FILE=/etc/hosts
 FORCE=false
 KERNEL=`uname`
+TEMP_ENV_FILE=".env.tmp"
+CONFIG_FILE=".config"
+FILES="-f docker-compose.yml"
+FIRST_RUN=false
+INVALID="Invalid input received, try again.."
 
 while [[ $# -gt 0 ]] ; do
 	key="$1"
 	case $key in
+		up)
+			COMMAND="up"
+		;;
+		down)
+			COMMAND="down"
+		;;
+		install)
+			COMMAND="install"
+		;;
+		add)
+			COMMAND="add"
+		;;
 		-p|--project)
 			PROJECT="$2"
 			shift
-		;;
-		up)
-			METHOD="up"
-		;;
-		down)
-			METHOD="down"
 		;;
 		-h|--help)
 			HELP=true
@@ -46,87 +56,252 @@ while [[ $# -gt 0 ]] ; do
 	shift # past argument or value
 done
 
-# Extract host from .env
-HOST=`cat .env | grep HOST=`
-HOST=${HOST:5}
+
+
+function get_directory() {
+	current_directory=`pwd`
+	directories=(${current_directory//// })
+	current_directory=${directories[${#directories[@]} - 1]}
+}
 
 ##
 # show help nicely formatted
 ##
 function show_help() {
 	cat <<EOF
-Usage: $0 [options]
-The options are space seperated, so use them
-like this -p <project> -v up
+Welcome to the Automotivated development environment
 
--h| --help           Will print this message
+Usage: $0 COMMAND
 
--p|--project         Custom project namespace
--v|--verbose         Will output everything
--f|--force-recreate  Force recreation
+Options:
+    -h,   --help              Will print this message
+    -p,   --project           Custom project namespace
+    -v,   --verbose           Will output everything
+    -f,   --force-recreate    Force recreation
+
+Commands:
+    install                   Start a fresh installation
+    add                       Add a new domain / project
+    up                        Will bring the services up
+    down                      Shutsdown all services
 EOF
+}
+
+function choose_webserver() {
+	read -p 'Should we setup apache or nginx (apache|nginx): ' webserver
+	if [[ "$webserver" == "apache" || "$webserver" == "nginx" ]] ; then
+		echo "WEBSERVER=${webserver}" >> $CONFIG_FILE
+		FILES+=" -f docker-compose.${webserver}.yml"
+	else
+		echo $INVALID
+		choose_webserver
+	fi
+}
+
+function use_elastic() {
+	read -p 'Should we setup elastic (y|n): ' elastic
+	if [[ "$elastic" == "y" || "$elastic" == "yes" ]] ; then
+		FILES+=" -f docker-compose.elastic.yml"
+	fi
+}
+
+function rand() {
+	export LC_CTYPE=C
+	t=`cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 16 | head -n 1`
+}
+
+function get_database_config() {
+	read -p 'MySQL root password: ' db_root
+	if [ -z "$db_root" ] ; then
+		rand
+		db_root=$t
+		echo "Generated root password: ${db_root}"
+	fi
+}
+
+function setup_database() {
+	get_directory
+	read -p 'MySQL database user: ' db_user
+	if [ -z "$db_user" ] ; then
+		rand
+		db_user="${current_directory}_user_${t:0:5}"
+		echo "Generated database user: ${db_user}"
+	fi
+	read -p 'MySQL database name: ' db_name
+	if [ -z "$db_name" ] ; then
+		rand
+		db_name="${current_directory}_name_${t:0:5}"
+		echo "Generated database name: ${db_name}"
+	fi
+	read -p 'MySQL database password: ' db_pass
+	if [ -z "$db_pass" ] ; then
+		rand
+		db_pass=$t
+		echo "Generated database password: ${db_pass}"
+	fi
+}
+
+function get_ip() {
+	# Loop over all running docker containers and find our chosen webserver
+	for service in `docker ps -q`; do
+		# Extract the servicename
+		servicename=`docker inspect --format '{{ .Name }}' $service `
+		webserver=`cat .config | grep WEBSERVER=`
+		webserver=${webserver:10}
+		validservice="${PROJECT}_${webserver}_"
+		if [[ ${servicename:1} == ${validservice}* ]] ; then
+			echo "docker inspect --format {{.NetworkSettings.Networks.${PROJECT}_server.IPAddress}} $service"
+			IP=`docker inspect --format {{.NetworkSettings.Networks.${PROJECT}_server.IPAddress}} $service`
+			echo $IP
+		fi
+	done
+}
+
+
+function set_host() {
+	# Extract host from .env
+	HOST=`cat .env | grep HOST=`
+	HOST=${HOST:5}
+}
+
+function update_hosts_file() {
+	if [ -f ${HOSTS_FILE} ]; then
+		get_ip
+		set_host
+
+		echo $1
+		if [ "$1" == "add" ] ; then
+			## Update hosts file
+			echo "$IP"
+			grep -v $HOST $HOSTS_FILE > $TEMP_FILE
+			echo $IP '\t' $HOST '\t # Added by ${PROJECT} automatically' >> $TEMP_FILE
+			ALIAS="alias"
+		elif [ "$1" == "remove" ] ; then
+			grep -v $HOST $HOSTS_FILE > $TEMP_FILE
+			ALIAS="-alias"
+		fi
+
+		## Fix docker ip on mac
+		if [[ ${KERNEL} == *Darwin* ]] ; then
+			fix_alias="sudo ifconfig lo0 ${ALIAS} ${IP}"
+			echo $fix_alias
+			# eval $fix_alias
+		fi
+		sudo mv $TEMP_FILE $HOSTS_FILE
+	fi
 }
 
 ##
 # Bring the service up
 ##
-if [ "$METHOD" == "up" ] ; then
-	echo "Firing up [${HOST}] under [${PROJECT}]"
+function get_it_up() {
+	echo "Firing up [${PROJECT}]"
 	FILES=`grep -F "FILES=" .config`
 
 	up="docker-compose -p $PROJECT ${FILES:6} up -d"
 	if [ "$FORCE" == true ] ; then
 		up+=" --force-recreate"
 	fi
-	if [ "$VERBOSE" == true ] ; then
-		eval $up
-	else
-		eval $up >/dev/null 2>&1
-	fi
-
-	# for all running docker containers
-	for service in `docker ps -q`; do
-		# Extract the servicename
-		servicename=`docker inspect --format '{{ .Name }}' $service `
-		validservice="${PROJECT}_apache_"
-		if [[ ${servicename:1} == ${validservice}* ]] ; then
-			ip=`docker inspect --format {{.NetworkSettings.Networks.${PROJECT}_server.IPAddress}} $service`
-		fi
-	done
-
-	## Update hosts file
-	if [ -f ${HOSTS_FILE} ]; then
-		grep -v $HOST $HOSTS_FILE > $TEMP_FILE
-		echo $ip '\t' $HOST '\t # Added by devenv' >> $TEMP_FILE
-		sudo mv $TEMP_FILE $HOSTS_FILE
-	fi
-
-	## Fix docker ip on mac
-	if [[ ${KERNEL} == *Darwin* ]] ; then
-		sudo ifconfig lo0 alias $ip
-	fi
+	echo "Executing: ${up}"
+	# if [ "$VERBOSE" == true ] ; then
+	# 	eval $up
+	# else
+	# 	eval $up >/dev/null 2>&1
+	# fi
+	# update_hosts_file add
+}
 
 ##
 # Bring the service down
 ##
-elif [ "$METHOD" == "down" ] ; then
-	echo "Stopping up [${HOST}] under [${PROJECT}]"
-	down="docker-compose -p $PROJECT down"
+function get_it_down() {
+	FILES=`grep -F "FILES=" .config`
+	echo "Stopping [${PROJECT}]"
+	down="docker-compose -p $PROJECT down --remove-orphans"
+	echo $down
 	if [ "$VERBOSE" == true ] ; then
 		eval $down
 	else
 		eval $down >/dev/null 2>&1
 	fi
+	update_hosts_file remove
+}
 
-	if [ -f ${HOSTS_FILE} ]; then
-		grep -v $HOST $HOSTS_FILE > $TEMP_FILE
-		sudo mv $TEMP_FILE $HOSTS_FILE
+##
+# Installs a new environment from scratch
+# Check if we already runned the install
+# If not, continue with the installation
+##
+function do_install() {
+	FIRST_RUN=true
+	choose_webserver
+	use_elastic
+	echo "FILES=${FILES}" >> $CONFIG_FILE
+	get_database_config
+	cat ".env.dist" > $TEMP_ENV_FILE
+	sed -i "" "s/^DB_ROOT_PASSWORD=.*/DB_ROOT_PASSWORD=${db_root}/g" $TEMP_ENV_FILE
+	add_project
+}
+
+##
+# Add a project
+##
+function add_project() {
+	echo "Adding a new project to the stack"
+
+	read -p 'Hostname: ' domainname
+	if [ -z "$domainname" ] ; then
+		echo $INVALID
+		add_project
 	fi
 
-	## Fix docker ip on mac
-	if [[ ${KERNEL} == *Darwin* ]] ; then
-		sudo ifconfig lo0 -alias $ip
+	# Setup the database
+	setup_database
+
+	if [ "$FIRST_RUN" == true ] ; then
+		sed -i "" "s/^HOST=.*/HOST=${domainname}/g" $TEMP_ENV_FILE
+		sed -i "" "s/^DB_NAME=.*/DB_NAME=${db_name}/g" $TEMP_ENV_FILE
+		sed -i "" "s/^DB_USERNAME=.*/DB_USERNAME=${db_user}/g" $TEMP_ENV_FILE
+		sed -i "" "s/^DB_PASSWORD=.*/DB_PASSWORD=${db_pass}/g" $TEMP_ENV_FILE
+		mv $TEMP_ENV_FILE ".env"
 	fi
+
+	if [ "$webserver" == "apache" ] ; then
+		echo  "setting up apache"
+	fi
+
+	# rm ".env"
+	# rm ".config"
+}
+
+if [ "$COMMAND" == "up" ] ; then
+	# check if .config exists
+	if [ ! -f ".config" ] ; then
+		echo ".config file not found, please run installlation first"
+		exit
+	fi
+	get_it_up
+elif [ "$COMMAND" == "down" ] ; then
+	# check if .config exists
+	if [ ! -f ".config" ] ; then
+		echo ".config file not found, please run installlation first"
+		exit
+	fi
+	get_it_down
+elif [ "$COMMAND" == "add" ] ; then
+	# check if .config exists
+	if [ ! -f ".config" ] ; then
+		echo ".config file not found, please run installlation first"
+		exit
+	fi
+	add_project
+elif [ "$COMMAND" == "install" ] ; then
+	# check if .config exists
+	if [ -f ".config" ] ; then
+		echo ".config file found, aborting installation"
+		exit
+	fi
+	do_install
 else
 	show_help
 fi

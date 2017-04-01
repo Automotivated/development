@@ -1,5 +1,16 @@
-# Automotivated development
-Automotivated development is a [Docker](https://www.docker.com/) container setup for working on [Automotivated.vroom( )](https://github.com/Automotivated/vroom) or [Automotivated.engine( )](https://github.com/Automotivated/engine).
+# Docker development containers
+This repository is a setup for working on a development machine and you want to run on [docker](https://www.docker.com/). It's mostly build on the edge version of [Alpine Linux](https://alpinelinux.org/). 
+If you are a developer looking into this repo and don't own a Mac, hmm.. don't know if it's going to work right out of the box. PR's are appreciated!
+
+I set it up for the Automotivated projects [Automotivated.vroom( )](https://github.com/Automotivated/vroom) and [Automotivated.engine( )](https://github.com/Automotivated/engine), but kept it general so others can enjoy my effort.
+
+It contains setups for the following containers:
+
+> apache  
+ mysql  
+ nginx  
+ php  
+ elasticsearch
 
 ## Before we begin
 Put on some nice [Electro Swing](https://www.youtube.com/watch?v=htbQgPh1DaA) and make sure you got the following applications installed:
@@ -15,65 +26,69 @@ git clone https://github.com/Automotivated/development.git
 ```
 
 ## 1. Installation
-Run install.sh for optimal and minimal effort for setting everything up.
+This repository comes with a script that can handle all important stuff! Sweet!  
+Just open your terminal and go to the root of this project. If you're using `fish`, prefix `/bin/sh`
+
+`/bin/sh run.sh install`
+
+If you somehow forget the `install` argument, the script will print out the help. Also available under `run.sh -h` or `run.sh --help`
+
+```
+Usage: run.sh COMMAND
+
+Options:
+    -h,   --help              Will print this message
+    -p,   --project           Custom project namespace
+    -v,   --verbose           Will output everything
+    -f,   --force-recreate    Force recreation
+
+Commands:
+    install                   Start a fresh installation
+    add                       Add a new domain / project
+    up                        Will bring the services up
+    down                      Shutsdown all services
+```
+The installation will ask you some questions and if you fill them in correctly you'll end up with an `.config` and `.env`
+The `.config` is for future reference and the `.env` is a default [docker compose environment file](https://docs.docker.com/compose/environment-variables/#the-env-file).
+You can change the contents of the `.env` to your own likings, but please be advised that the run script is depending on it!
 
 ## 2. Firing up the development environment
+This shouldn't be that hard!
 
+`/bin/sh run.sh up`
 
-## 3. Manual 
+Want to know what's happening in the background? Just add the `-v` flag for some verbose output.
 
-### 3.1 Installation
-First make a copy of the `.env.dist` file and name it `.env`. Now adjust the configuration accordingly.
+## 3. Show me the money!
 
-```sh
-cp .env.dist .env
-```
-When your smart, you will install all Automotivated projects in the same namespace. Therefore linking and developping is much easier.
+Now, just navigate to: [http://127.0.0.1](http://127.0.0.1). You should see the default server is up page.
+> We added in the script an alias for your domain, so you can use that instead. If something already runs on port 80, shut that down!
 
-```
-/users/myname/home/project/Automotivated/development
-/users/myname/home/project/Automotivated/engine
-/users/myname/home/project/Automotivated/vroom
-....
-```
-When you use this format, you shouldn't run into any troubles when you set the `PROJECT_ROOT=../`  
-If you somehow want to setup things differently, make sure you adjust the `root /var/www/Automotivated/engine/web;` in the `default.conf` of nginx before proceeding!
-
-### 1.2 Building & running
-Navigate to the project root directory. Probably you have to build the images on your local machine first. Do so by running:
-
-```sh
-docker-compose build
-```
-It will do a lot of stuff, like pulling all dependencies and building the environment.
-Now, with everything in place, just run:
-
-```sh
-docker-compose up -d
-```
-The `-d` will run it in the background so you don't have to keep your terminal open. Remove the -d for debugging when something doesn't work. You will see full output.
-
-Now, just navigate to: [http://127.0.0.1](http://127.0.0.1). You should see the default server is up page. If not.. Goto step 2 and improve the docker or, try a different port.  
-Change the port in the `docker-compose.yml` to a desirable and free port (`- "3000:80"`) for example. You can always add a rule to your `/etc/hosts` file for using a domain instead of an ip.
-
-### 1.3 Logging in to the environments
-Mostly we should login to the php environment for example, run the `bin/console` or `composer` commands
-```
-docker exec -it amv-dev /bin/sh
-```
-
-### 1.4 Composer
-Once logged in, navigate to `/var/www/Automotivated/engine` and run `composer install`
+## 4. Logging in into the containers
+Mostly we should login to the php container for example, run the `bin/console` or `composer` commands  
+If you didn't choose your own namespacing for the project with the `-p` operator, then the following command should do it:
 
 ```
-cd /var/www/Automotivated/engine
-composer install
+docker exec -it devenv_php_1 /bin/sh
 ```
 
-### 1.5 Off you go!
-[http://127.0.0.1/app_dev.php/api/search](http://127.0.0.1/app_dev.php/api/search)
+If however you changed the project name, then replace `<container>` with your own project name followed by _php_1
 
-## 4. Improving the environments
+```
+docker exec -it <container> /bin/sh
+```
+
+
+## 5. Manual installation and running
+Okay, so you're a badass! Good for you! Get to know [docker compose](https://docs.docker.com/compose/) and use this repo as a guideline.
+Make sure to create a valid docker-compose.yml or use the `-f` operator like we do in the run.sh.
+
+
+## 6. Improving the environments
 Make your changes..  
 Create a Pull request  
 Fingers crossed it get's merged
+
+## TODO
+- [ ] Add ssh inlog to run.sh
+- [ ] Add 

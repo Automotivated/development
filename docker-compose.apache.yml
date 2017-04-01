@@ -10,7 +10,7 @@ services:
     networks:
       - server
     volumes:
-      - "${PROJECT_ROOT}:/var/www:ro"
+      - "${PROJECT_ROOT}:/var/www/projects:ro"
       - ./logs:/var/log/apache2
       - ./services/apache/vhosts:/etc/apache2/vhosts.d:ro
     restart: always
