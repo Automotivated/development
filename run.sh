@@ -150,9 +150,7 @@ function get_ip() {
 		webserver=${webserver:10}
 		validservice="${PROJECT}_${webserver}_"
 		if [[ ${servicename:1} == ${validservice}* ]] ; then
-			echo "docker inspect --format {{.NetworkSettings.Networks.${PROJECT}_server.IPAddress}} $service"
 			IP=`docker inspect --format {{.NetworkSettings.Networks.${PROJECT}_server.IPAddress}} $service`
-			echo $IP
 		fi
 	done
 }
@@ -169,10 +167,8 @@ function update_hosts_file() {
 		get_ip
 		set_host
 
-		echo $1
 		if [ "$1" == "add" ] ; then
 			## Update hosts file
-			echo "$IP"
 			grep -v $HOST $HOSTS_FILE > $TEMP_FILE
 			echo $IP '\t' $HOST '\t # Added by ${PROJECT} automatically' >> $TEMP_FILE
 			ALIAS="alias"
@@ -184,8 +180,7 @@ function update_hosts_file() {
 		## Fix docker ip on mac
 		if [[ ${KERNEL} == *Darwin* ]] ; then
 			fix_alias="sudo ifconfig lo0 ${ALIAS} ${IP}"
-			echo $fix_alias
-			# eval $fix_alias
+			eval $fix_alias
 		fi
 		sudo mv $TEMP_FILE $HOSTS_FILE
 	fi
@@ -202,13 +197,12 @@ function get_it_up() {
 	if [ "$FORCE" == true ] ; then
 		up+=" --force-recreate"
 	fi
-	echo "Executing: ${up}"
-	# if [ "$VERBOSE" == true ] ; then
-	# 	eval $up
-	# else
-	# 	eval $up >/dev/null 2>&1
-	# fi
-	# update_hosts_file add
+	if [ "$VERBOSE" == true ] ; then
+		eval $up
+	else
+		eval $up >/dev/null 2>&1
+	fi
+	update_hosts_file add
 }
 
 ##
