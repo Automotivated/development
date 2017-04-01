@@ -377,3 +377,10 @@ fi
 ##
 # http://stackoverflow.com/questions/36627980/how-to-execute-commands-in-docker-container-as-part-of-bash-shell-script
 ##
+
+# docker exec -i CONTAINER_NAME /bin/sh <<'EOF'
+# cd /var/www/projects/$domainname
+# rm -rf *
+# composer create-project roots/bedrock .
+# exit
+# EOF
