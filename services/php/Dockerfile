@@ -28,6 +28,7 @@ RUN echo "http://dl-cdn.alpinelinux.org/alpine/edge/testing" >> /etc/apk/reposit
 		php7-mcrypt \
 		php7-zip \
 		php7-pdo_mysql \
+		php7-mysqli \
 		php7-mbstring \
 		php7-ctype \
 		php7-posix \

@@ -19,6 +19,7 @@ CONFIG_FILE=".config"
 FILES="-f docker-compose.yml"
 FIRST_RUN=false
 INVALID="Invalid input received, try again.."
+BUILD=false
 
 while [[ $# -gt 0 ]] ; do
 	key="$1"
@@ -40,6 +41,9 @@ while [[ $# -gt 0 ]] ; do
 		;;
 		-h|--help)
 			HELP=true
+		;;
+		-b|--build)
+			BUILD=true
 		;;
 		-f|--force-recreate)
 			FORCE=true
@@ -75,6 +79,7 @@ Options:
     -h,   --help              Will print this message
     -v,   --verbose           Will output everything
     -f,   --force-recreate    Force recreation
+    -b,   --build             Force rebuild of dockers
 
 Commands:
     install                   Start a fresh installation
@@ -217,6 +222,10 @@ function get_it_up() {
 	if [ "$FORCE" == true ] ; then
 		up+=" --force-recreate"
 	fi
+	if [ "$BUILD" == true ] ; then
+		up+=" --build"
+	fi
+
 	if [ "$VERBOSE" == true ] ; then
 		eval $up
 	else
