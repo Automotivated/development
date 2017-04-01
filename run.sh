@@ -170,7 +170,7 @@ function update_hosts_file() {
 		if [ "$1" == "add" ] ; then
 			## Update hosts file
 			grep -v $HOST $HOSTS_FILE > $TEMP_FILE
-			echo $IP '\t' $HOST '\t # Added by ${PROJECT} automatically' >> $TEMP_FILE
+			echo $IP '\t' $HOST '\t # Added by \t ' $PROJECT ' automatically' >> $TEMP_FILE
 			ALIAS="alias"
 		elif [ "$1" == "remove" ] ; then
 			grep -v $HOST $HOSTS_FILE > $TEMP_FILE
@@ -209,16 +209,16 @@ function get_it_up() {
 # Bring the service down
 ##
 function get_it_down() {
-	FILES=`grep -F "FILES=" .config`
 	echo "Stopping [${PROJECT}]"
+	# first remove ip from the list before shutting down
+	update_hosts_file remove
+
 	down="docker-compose -p $PROJECT down --remove-orphans"
-	echo $down
 	if [ "$VERBOSE" == true ] ; then
 		eval $down
 	else
 		eval $down >/dev/null 2>&1
 	fi
-	update_hosts_file remove
 }
 
 ##
