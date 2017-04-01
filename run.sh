@@ -9,7 +9,6 @@
 ############################################################
 #!/bin/sh
 
-PROJECT="devenv"
 IP="127.0.0.1"
 TEMP_FILE="hosts.tmp"
 HOSTS_FILE=/etc/hosts
@@ -33,12 +32,11 @@ while [[ $# -gt 0 ]] ; do
 		install)
 			COMMAND="install"
 		;;
+		ssh)
+			COMMAND="ssh"
+		;;
 		add)
 			COMMAND="add"
-		;;
-		-p|--project)
-			PROJECT="$2"
-			shift
 		;;
 		-h|--help)
 			HELP=true
@@ -75,7 +73,6 @@ Usage: $0 COMMAND
 
 Options:
     -h,   --help              Will print this message
-    -p,   --project           Custom project namespace
     -v,   --verbose           Will output everything
     -f,   --force-recreate    Force recreation
 
@@ -84,6 +81,7 @@ Commands:
     add                       Add a new domain / project
     up                        Will bring the services up
     down                      Shutsdown all services
+    ssh                       Directly login to the php container
 EOF
 }
 
@@ -96,6 +94,16 @@ function choose_webserver() {
 		echo $INVALID
 		choose_webserver
 	fi
+}
+
+function choose_project() {
+	read -p 'What name would you like for your environment?: ' environment
+	if [ -z "$environment" ] ; then
+		PROJECT="devenv"
+	else
+		PROJECT=${environment}
+	fi
+	echo "PROJECT=${PROJECT}" >> $CONFIG_FILE
 }
 
 function use_elastic() {
@@ -126,6 +134,13 @@ function set_webserver() {
 	fi
 }
 
+function set_project() {
+	if [[ -z "$PROJECT" ]] ; then
+		PROJECT=`cat .config | grep PROJECT=`
+		PROJECT=${PROJECT:8}
+	fi
+}
+
 function setup_database() {
 	get_directory
 	read -p 'MySQL database user: ' db_user
@@ -152,8 +167,7 @@ function get_ip() {
 	# Loop over all running docker containers and find our chosen webserver
 	for service in `docker ps -q`; do
 		# Extract the servicename
-		servicename=`docker inspect --format '{{ .Name }}' $service `
-		set_webserver
+		servicename=`docker inspect --format '{{ .Name }}' $service`
 		validservice="${PROJECT}_${webserver}_"
 		if [[ ${servicename:1} == ${validservice}* ]] ; then
 			IP=`docker inspect --format {{.NetworkSettings.Networks.${PROJECT}_server.IPAddress}} $service`
@@ -173,7 +187,7 @@ function update_hosts_file() {
 		for entry in "projects"/* ; do
 			HOST=${entry:9}
 			if [ "$1" == "add" ] ; then
-				echo $IP '\t' $HOST '\t # Added by \t ' $PROJECT ' automatically' >> $TEMP_FILE
+				echo $IP '\t' $HOST '\t # Added by [' $PROJECT '] automatically' >> $TEMP_FILE
 			elif [ "$1" == "remove" ] ; then
 				grep -v $HOST $HOSTS_FILE > $TEMP_FILE
 			fi
@@ -241,6 +255,7 @@ function setup_hostname() {
 ##
 function do_install() {
 	FIRST_RUN=true
+	choose_project
 	choose_webserver
 	use_elastic
 	echo "FILES=${FILES}" >> $CONFIG_FILE
@@ -286,8 +301,6 @@ function add_project() {
 		mv $TEMP_ENV_FILE ".env"
 	fi
 
-	set_webserver
-
 	if [ "$webserver" == "apache" ] ; then
 		setup_apache_project
 	fi
@@ -297,26 +310,27 @@ function add_project() {
 	fi
 }
 
-if [ "$COMMAND" == "up" ] ; then
+function check_config() {
 	# check if .config exists
 	if [ ! -f ".config" ] ; then
 		echo ".config file not found, please run installlation first"
 		exit
 	fi
+	set_webserver
+	set_project
+}
+
+##
+# What should we execute?
+##
+if [ "$COMMAND" == "up" ] ; then
+	check_config
 	get_it_up
 elif [ "$COMMAND" == "down" ] ; then
-	# check if .config exists
-	if [ ! -f ".config" ] ; then
-		echo ".config file not found, please run installlation first"
-		exit
-	fi
+	check_config
 	get_it_down
 elif [ "$COMMAND" == "add" ] ; then
-	# check if .config exists
-	if [ ! -f ".config" ] ; then
-		echo ".config file not found, please run installlation first"
-		exit
-	fi
+	check_config
 	add_project
 elif [ "$COMMAND" == "install" ] ; then
 	# check if .config exists
@@ -325,6 +339,7 @@ elif [ "$COMMAND" == "install" ] ; then
 		exit
 	fi
 	do_install
+	echo "Successfully installed!"
 else
 	show_help
 fi
