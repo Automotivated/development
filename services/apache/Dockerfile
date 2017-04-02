@@ -31,7 +31,6 @@ RUN echo "http://dl-cdn.alpinelinux.org/alpine/edge/testing" >> /etc/apk/reposit
 		/etc/apache2/httpd.conf && \
 	sed -i -e "s/^#LoadModule rewrite_module/LoadModule rewrite_module/" \
 		/etc/apache2/httpd.conf && \
-
 	sed -i -e "s/^#ServerName www.example.com:80/ServerName example.local/" \
 		/etc/apache2/httpd.conf && \
 
