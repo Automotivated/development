@@ -292,15 +292,32 @@ function setup_recipe() {
 	if [ "$RECIPE" == "wordpress" ] ; then
 		setup_wordpress
 	elif [ "$RECIPE" == "symfony" ] ; then
-		echo "NOT IMPLEMENTED YET"
-		exit
-	else
-		echo "NOT IMPLEMENTED YET"
-		exit
+		setup_symfony
+	elif [ "$RECIPE" == "default" ] ; then
+		echo "Installing default project"
 	fi
 }
 
+function setup_symfony() {
+	echo "Installing Symfony project"
+	## Install via composer within the docker
+	docker exec -i ${PROJECT}_php_1 /bin/bash <<EOF
+		cd /var/www/projects/$DOMAINNAME
+		composer create-project symfony/framework-standard-edition .
+		exit
+EOF
+	SF_ENV="projects/$DOMAINNAME/app/config/parameters.yml"
+	sed -i "" "s/^    database_host:.*/    database_host: mysql/g" $SF_ENV
+	sed -i "" "s/^    database_port:.*/    database_host: 3306/g" $SF_ENV
+	sed -i "" "s/^    database_name:.*/    database_name: ${DB_NAME}/g" $SF_ENV
+	sed -i "" "s/^    database_user:.*/    database_user: ${DB_USER}/g" $SF_ENV
+	sed -i "" "s/^    database_password:.*/    database_password: ${DB_PASS}/g" $SF_ENV
+	rand
+	sed -i "" "s/^    secret:.*/    secret: ${t}/g" $SF_ENV
+}
+
 function setup_wordpress() {
+	echo "Installing Wordpress project"
 	## Install via composer within the docker
 	docker exec -i ${PROJECT}_php_1 /bin/bash <<EOF
 		cd /var/www/projects/$DOMAINNAME
@@ -334,6 +351,7 @@ EOF
 
 function add_database() {
 	if [ "$FIRST_RUN" == false ] ; then
+		echo "Adding database"
 		## Add the database!
 		PASS=`cat .env | grep DB_ROOT_PASSWORD=`
 		PASS=${PASS:17}
@@ -343,7 +361,7 @@ function add_database() {
 			create user $DB_USER;
 			grant all on $DB_NAME.* to '$DB_USER'@'%' identified by '$DB_PASS';
 			flush privileges;
-			quit;
+			quit
 			exit
 EOF
 	fi
