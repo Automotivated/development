@@ -18,6 +18,9 @@ RUN echo "http://dl-cdn.alpinelinux.org/alpine/edge/testing" >> /etc/apk/reposit
 		git \
 		curl \
 		unzip \
+		bash \
+		bash-doc \
+		bash-completion \
 		php7-phar \
 		php7-curl \
 		php7-xml \
