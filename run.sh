@@ -343,7 +343,7 @@ function add_database() {
 			create user $DB_USER;
 			grant all on $DB_NAME.* to '$DB_USER'@'%' identified by '$DB_PASS';
 			flush privileges;
-			quit
+			quit;
 			exit
 EOF
 	fi
