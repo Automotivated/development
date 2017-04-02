@@ -109,9 +109,6 @@ Create a Pull request
 Fingers crossed it get's merged
 
 ## TODO
-- [ ] Add ssh inlog to run.sh
-- [ ] Add templating for project types
- - [ ] Initial wordpress template with bedrock
- - [ ] Clean symfony template
+- [ ] Add recipe for symfony
+- [ ] Add recipe for default
 - [ ] Add database to mysql when adding new project
-- [x] Multidomain alias

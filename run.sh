@@ -135,6 +135,11 @@ function rand() {
 	t=`cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 16 | head -n 1`
 }
 
+function salt() {
+	export LC_CTYPE=C
+	s=`cat /dev/urandom | tr -dc 'a-zA-Z0-9-_{}!@#%^*()[]|.,\?:;~' | fold -w 64 | head -n 1`
+}
+
 function get_database_config() {
 	read -p 'MySQL root password: ' DB_ROOT
 	if [ -z "$DB_ROOT" ] ; then
@@ -204,14 +209,14 @@ function update_hosts_file() {
 
 		## Update hosts file
 		grep -v $IP $HOSTS_FILE > $TEMP_FILE
-		for entry in "projects"/* ; do
-			HOST=${entry:9}
-			if [ "$1" == "add" ] ; then
+
+		if [ "$1" == "add" ] ; then
+			for entry in projects/* ; do
+				HOST=${entry:9}
 				echo $IP '\t' $HOST '\t # Added by [' $PROJECT '] automatically' >> $TEMP_FILE
-			elif [ "$1" == "remove" ] ; then
-				grep -v $HOST $HOSTS_FILE > $TEMP_FILE
-			fi
-		done
+			done
+		fi
+
 		sudo mv $TEMP_FILE $HOSTS_FILE
 
 		## Fix docker ip on mac
@@ -280,6 +285,9 @@ function setup_recipe() {
 	sed -i "" "s/domain.tld/${DOMAINNAME}/g" $VHOST
 	sed -i "" "s#/projects/project#/projects/${DOMAINNAME}#g" $VHOST
 
+	## Add the database to our database..hm.. something like that
+	add_database
+
 	## Execute recipe specific operations
 	if [ "$RECIPE" == "wordpress" ] ; then
 		setup_wordpress
@@ -290,14 +298,62 @@ function setup_recipe() {
 		echo "NOT IMPLEMENTED YET"
 		exit
 	fi
-
+	FORCE=true
+	get_it_up
 }
 
 function setup_wordpress() {
+	## Install via composer within the docker
 	docker exec -i ${PROJECT}_php_1 /bin/bash <<EOF
-cd /var/www/projects/$DOMAINNAME
-composer create-project roots/bedrock .
-exit
+		cd /var/www/projects/$DOMAINNAME
+		composer create-project roots/bedrock .
+		exit
+EOF
+	WP_ENV="projects/$DOMAINNAME/.env"
+	cat projects/$DOMAINNAME/.env.example > $WP_ENV
+	sed -i "" "s/^DB_NAME=.*/DB_NAME=${DB_NAME}/g" $WP_ENV
+	sed -i "" "s/^DB_USER=.*/DB_USER=${DB_USER}/g" $WP_ENV
+	sed -i "" "s/^DB_PASSWORD=.*/DB_PASSWORD=${DB_PASS}/g" $WP_ENV
+	sed -i "" "s/^# DB_HOST=.*/DB_HOST=mysql/g" $WP_ENV
+	sed -i "" "s#^WP_HOME=.*#WP_HOME=http://$DOMAINNAME#g" $WP_ENV
+	salt
+	echo $s
+	sed -i "" "s/^AUTH_KEY=.*/AUTH_KEY='${s}'/g" $WP_ENV
+	salt
+	echo $s
+	sed -i "" "s/^SECURE_AUTH_KEY=.*/SECURE_AUTH_KEY='${s}'/g" $WP_ENV
+	salt
+	echo $s
+	sed -i "" "s/^LOGGED_IN_KEY=.*/LOGGED_IN_KEY='${s}'/g" $WP_ENV
+	salt
+	echo $s
+	sed -i "" "s/^NONCE_KEY=.*/NONCE_KEY='${s}'/g" $WP_ENV
+	salt
+	echo $s
+	sed -i "" "s/^AUTH_SALT=.*/AUTH_SALT='${s}'/g" $WP_ENV
+	salt
+	echo $s
+	sed -i "" "s/^SECURE_AUTH_SALT=.*/SECURE_AUTH_SALT='${s}'/g" $WP_ENV
+	salt
+	echo $s
+	sed -i "" "s/^LOGGED_IN_SALT=.*/LOGGED_IN_SALT='${s}'/g" $WP_ENV
+	salt
+	echo $s
+	sed -i "" "s/^NONCE_SALT=.*/NONCE_SALT='${s}'/g" $WP_ENV
+}
+
+function add_database() {
+	## Add the database!
+	PASS=`cat .env | grep DB_ROOT_PASSWORD=`
+	PASS=${PASS:17}
+	docker exec -i ${PROJECT}_mysql_1 /bin/bash <<EOF
+		mysql --user=root --password=$PASS
+		create database $DB_NAME;
+		create user $DB_USER;
+		grant all on $DB_NAME.* to '$DB_USER'@'%' identified by '$DB_PASS';
+		flush privileges;
+		quit
+		exit
 EOF
 }
 
@@ -373,7 +429,7 @@ function get_it_in() {
 		fi
 	done
 	if [ ! -z "$CONTAINER" ] ; then
-		docker exec -it $CONTAINER /bin/sh
+		docker exec -it $CONTAINER /bin/bash
 	fi
 }
 
@@ -399,14 +455,14 @@ elif [ "$COMMAND" == "down" ] ; then
 	get_it_down
 elif [ "$COMMAND" == "add" ] ; then
 	check_config
-	CONTAINER_NAME="${PROJECT}_php_1"
-	if ! docker top $CONTAINER &>/dev/null ; then
-		get_it_up
-	fi
 	add_project
 elif [ "$COMMAND" == "ssh" ] ; then
 	check_config
 	get_it_in
+elif [ "$COMMAND" == "mysql" ] ; then
+	check_config
+	echo "Not implemented yet"
+	exit
 elif [ "$COMMAND" == "install" ] ; then
 	# check if .config exists
 	if [ -f ".config" ] ; then
@@ -418,15 +474,3 @@ elif [ "$COMMAND" == "install" ] ; then
 else
 	show_help
 fi
-
-
-##
-# http://stackoverflow.com/questions/36627980/how-to-execute-commands-in-docker-container-as-part-of-bash-shell-script
-##
-
-# docker exec -i CONTAINER_NAME /bin/sh <<'EOF'
-# cd /var/www/projects/$DOMAINNAME
-# rm -rf *
-# composer create-project roots/bedrock .
-# exit
-# EOF
