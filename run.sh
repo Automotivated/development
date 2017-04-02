@@ -298,8 +298,6 @@ function setup_recipe() {
 		echo "NOT IMPLEMENTED YET"
 		exit
 	fi
-	FORCE=true
-	get_it_up
 }
 
 function setup_wordpress() {
@@ -317,44 +315,38 @@ EOF
 	sed -i "" "s/^# DB_HOST=.*/DB_HOST=mysql/g" $WP_ENV
 	sed -i "" "s#^WP_HOME=.*#WP_HOME=http://$DOMAINNAME#g" $WP_ENV
 	salt
-	echo $s
 	sed -i "" "s/^AUTH_KEY=.*/AUTH_KEY='${s}'/g" $WP_ENV
 	salt
-	echo $s
 	sed -i "" "s/^SECURE_AUTH_KEY=.*/SECURE_AUTH_KEY='${s}'/g" $WP_ENV
 	salt
-	echo $s
 	sed -i "" "s/^LOGGED_IN_KEY=.*/LOGGED_IN_KEY='${s}'/g" $WP_ENV
 	salt
-	echo $s
 	sed -i "" "s/^NONCE_KEY=.*/NONCE_KEY='${s}'/g" $WP_ENV
 	salt
-	echo $s
 	sed -i "" "s/^AUTH_SALT=.*/AUTH_SALT='${s}'/g" $WP_ENV
 	salt
-	echo $s
 	sed -i "" "s/^SECURE_AUTH_SALT=.*/SECURE_AUTH_SALT='${s}'/g" $WP_ENV
 	salt
-	echo $s
 	sed -i "" "s/^LOGGED_IN_SALT=.*/LOGGED_IN_SALT='${s}'/g" $WP_ENV
 	salt
-	echo $s
 	sed -i "" "s/^NONCE_SALT=.*/NONCE_SALT='${s}'/g" $WP_ENV
 }
 
 function add_database() {
-	## Add the database!
-	PASS=`cat .env | grep DB_ROOT_PASSWORD=`
-	PASS=${PASS:17}
-	docker exec -i ${PROJECT}_mysql_1 /bin/bash <<EOF
-		mysql --user=root --password=$PASS
-		create database $DB_NAME;
-		create user $DB_USER;
-		grant all on $DB_NAME.* to '$DB_USER'@'%' identified by '$DB_PASS';
-		flush privileges;
-		quit
-		exit
+	if [ "$FIRST_RUN" == false ] ; then
+		## Add the database!
+		PASS=`cat .env | grep DB_ROOT_PASSWORD=`
+		PASS=${PASS:17}
+		docker exec -i ${PROJECT}_mysql_1 /bin/bash <<EOF
+			mysql --user=root --password=$PASS
+			create database $DB_NAME;
+			create user $DB_USER;
+			grant all on $DB_NAME.* to '$DB_USER'@'%' identified by '$DB_PASS';
+			flush privileges;
+			quit
+			exit
 EOF
+	fi
 }
 
 ##
@@ -371,7 +363,12 @@ function add_project() {
 		sed -i "" "s/^DB_PASSWORD=.*/DB_PASSWORD=${DB_PASS}/g" $TEMP_ENV_FILE
 		mv $TEMP_ENV_FILE ".env"
 	fi
+	get_it_up
+
 	setup_recipe
+
+	FORCE=true
+	get_it_up
 }
 
 
