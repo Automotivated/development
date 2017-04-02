@@ -10,7 +10,7 @@
 #!/bin/sh
 
 IP="127.0.0.1"
-TEMP_FILE="hosts.tmp"
+TEMP_FILE=".hosts.tmp"
 HOSTS_FILE=/etc/hosts
 FORCE=false
 KERNEL=`uname`

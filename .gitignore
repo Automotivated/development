@@ -1,8 +1,7 @@
 .env
 .env.tmp
 .config
-
-hosts.tmp
+.hosts.tmp
 
 logs/*
 !logs/.gitkeep
@@ -13,6 +12,8 @@ services/apache/vhosts/*
 !services/apache/vhosts/*.config
 services/nginx/config/conf.d/*
 !services/nginx/config/conf.d/*.config
+services/mysql/dump/*
+!services/mysql/dump/.gitkeep
 
 projects/*
 !projects/.gitkeep
