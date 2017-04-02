@@ -79,14 +79,11 @@ Now, just navigate to: [http://127.0.0.1](http://127.0.0.1) or your chosen domai
 
 #### 1.5 Logging in into the containers
 Mostly we should login to the php container for example, run the `bin/console` or `composer` commands  
-If you didn't choose your own namespacing for the project with the `-p` operator, then the following command should do it:
-> We're working on creating a command to do this automatically.
-
 ```
-docker exec -it devenv_php_1 /bin/sh
+/bin/sh run.sh ssh
 ```
 
-If however you changed the project name, then replace `<container>` with your own project name followed by _php_1
+You can always use the docker commands, therefore replace `<container>` with your own project name followed by _php_1 (if you want to login to the php container)
 
 ```
 docker exec -it <container> /bin/sh
@@ -108,7 +105,5 @@ Make your changes..
 Create a Pull request  
 Fingers crossed it get's merged
 
-## TODO
-- [ ] Add recipe for symfony
-- [ ] Add recipe for default
-- [ ] Add database to mysql when adding new project
+# TODO
+- [ ] Mysql available over the network

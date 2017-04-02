@@ -87,7 +87,6 @@ Commands:
     up                        Will bring the services up
     down                      Shutsdown all services
     ssh                       Directly login to the php container
-    mysql                     Directly login to the mysql container
 EOF
 }
 
@@ -188,16 +187,30 @@ function setup_database() {
 
 # Get the ip of the webserver for aliasing
 function get_ip() {
+	#quick fix
+	if [ ! -z "$1" ] ; then
+		SERVICE=$1
+		NETWORKS=${PROJECT}_database
+	else
+		SERVICE=$WEBSERVER
+		NETWORKS=${PROJECT}_server
+	fi
 	# Loop over all running docker containers and find our chosen webserver
 	for service in `docker ps -q`; do
 		# Extract the servicename
 		servicename=`docker inspect --format '{{ .Name }}' $service`
-		validservice="${PROJECT}_${WEBSERVER}_"
+		validservice="${PROJECT}_${SERVICE}_"
 		if [[ ${servicename:1} == ${validservice}* ]] ; then
-			IP=`docker inspect --format {{.NetworkSettings.Networks.${PROJECT}_server.IPAddress}} $service`
+			DOCKER_IP=`docker inspect --format {{.NetworkSettings.Networks.${NETWORKS}.IPAddress}} $service`
 			break
 		fi
 	done
+
+	if [ ! -z "$1" ] ; then
+		DB_IP=$DOCKER_IP
+	else
+		IP=$DOCKER_IP
+	fi
 }
 
 ##
@@ -206,6 +219,7 @@ function get_ip() {
 function update_hosts_file() {
 	if [ -f ${HOSTS_FILE} ]; then
 		get_ip
+		get_ip mysql
 
 		## Update hosts file
 		grep -v $IP $HOSTS_FILE > $TEMP_FILE
@@ -215,6 +229,7 @@ function update_hosts_file() {
 				HOST=${entry:9}
 				echo $IP '\t' $HOST '\t # Added by [' $PROJECT '] automatically' >> $TEMP_FILE
 			done
+			echo $DB_IP '\t mysql.'$PROJECT '\t # Added by [' $PROJECT '] automatically' >> $TEMP_FILE
 		fi
 
 		sudo mv $TEMP_FILE $HOSTS_FILE
@@ -223,8 +238,10 @@ function update_hosts_file() {
 		if [[ ${KERNEL} == *Darwin* ]] ; then
 			if [ "$1" == "add" ] ; then
 				sudo ifconfig lo0 alias ${IP}
+				sudo ifconfig lo0 alias ${DB_IP}
 			elif [ "$1" == "remove" ] ; then
 				sudo ifconfig lo0 -alias ${IP}
+				sudo ifconfig lo0 -alias ${DB_IP}
 			fi
 		fi
 	fi
@@ -381,6 +398,7 @@ function add_project() {
 		sed -i "" "s/^DB_PASSWORD=.*/DB_PASSWORD=${DB_PASS}/g" $TEMP_ENV_FILE
 		mv $TEMP_ENV_FILE ".env"
 	fi
+	sleep 1
 	get_it_up
 
 	setup_recipe
