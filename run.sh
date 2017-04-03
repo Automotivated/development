@@ -222,7 +222,10 @@ function update_hosts_file() {
 		get_ip mysql
 
 		## Update hosts file
-		grep -v $IP $HOSTS_FILE > $TEMP_FILE
+		cat $HOSTS_FILE > $TEMP_FILE
+
+		sed -i "" "/^${IP}*/d" $TEMP_FILE
+		sed -i "" "/^${DB_IP}*/d" $TEMP_FILE
 
 		if [ "$1" == "add" ] ; then
 			for entry in projects/* ; do
