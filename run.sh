@@ -313,6 +313,8 @@ function setup_recipe() {
 		setup_wordpress
 	elif [ "$RECIPE" == "symfony" ] ; then
 		setup_symfony
+	elif [ "$RECIPE" == "bolt" ] ; then
+		setup_bolt
 	elif [ "$RECIPE" == "default" ] ; then
 		echo "Installing default project"
 	fi
@@ -367,6 +369,16 @@ EOF
 	sed -i "" "s/^LOGGED_IN_SALT=.*/LOGGED_IN_SALT='${s}'/g" $WP_ENV
 	salt
 	sed -i "" "s/^NONCE_SALT=.*/NONCE_SALT='${s}'/g" $WP_ENV
+}
+
+function setup_bolt() {
+	docker exec -i ${PROJECT}_php_1 /bin/bash <<EOF
+		cd /var/www/projects/$DOMAINNAME
+		curl -O https://bolt.cm/distribution/bolt-latest.tar.gz
+		tar -xzf bolt-latest.tar.gz --strip-components=1
+		php app/nut setup:sync
+		exit
+EOF
 }
 
 function add_database() {
