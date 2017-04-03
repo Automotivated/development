@@ -13,6 +13,7 @@ services:
     volumes:
       - "${PROJECT_ROOT}:/var/www/projects"
       - ./services/php/config/php.ini:/etc/php7/php.ini:ro
+      - ./services/php/profile/:/root:ro
     restart: always
     depends_on:
       - mysql
