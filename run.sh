@@ -227,9 +227,9 @@ function update_hosts_file() {
 		if [ "$1" == "add" ] ; then
 			for entry in projects/* ; do
 				HOST=${entry:9}
-				echo $IP '\t' $HOST '\t # Added by [' $PROJECT '] automatically' >> $TEMP_FILE
+				echo $IP '    ' $HOST '     # Added by [' $PROJECT '] automatically' >> $TEMP_FILE
 			done
-			echo $DB_IP '\t mysql.'$PROJECT '\t # Added by [' $PROJECT '] automatically' >> $TEMP_FILE
+			echo $DB_IP '     mysql.'$PROJECT '     # Added by [' $PROJECT '] automatically' >> $TEMP_FILE
 		fi
 
 		sudo mv $TEMP_FILE $HOSTS_FILE
