@@ -5,7 +5,7 @@
 
 logs/*
 !logs/.gitkeep
-!logs/domains/*
+logs/domains/*
 !logs/domains/.gitkeep
 
 services/apache/vhosts/*
