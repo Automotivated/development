@@ -3,11 +3,6 @@
 .config
 .hosts.tmp
 
-logs/*
-!logs/.gitkeep
-logs/domains/*
-!logs/domains/.gitkeep
-
 services/apache/vhosts/*
 !services/apache/vhosts/*.config
 services/nginx/config/conf.d/*
