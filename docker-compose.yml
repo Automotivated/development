@@ -20,6 +20,8 @@ services:
   # MySQL
   mysql:
     image: mysql:latest
+    ports:
+      - "3306:3306"
     networks:
       - database
     volumes:
